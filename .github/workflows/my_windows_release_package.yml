@@ -132,8 +132,6 @@ jobs:
             access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
             ## The AccessKey Secret of the credential.
             access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-            ## The STS Token of the credential. Only required for temporary access.
-            sts-token: 
 
         - shell: bash
           - run: |

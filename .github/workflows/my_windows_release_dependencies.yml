@@ -58,5 +58,7 @@ jobs:
         - uses: actions/cache/save@v4
           with:
             path: |
-              cu${{ inputs.cu }}_python_deps.tar
+              echo begin cache deps file
+              ls -lah
+              ComfyUI/cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
