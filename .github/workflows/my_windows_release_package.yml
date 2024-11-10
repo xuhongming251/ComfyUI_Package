@@ -85,7 +85,8 @@ jobs:
 
             cd /d %~dp0
 
-            set DEPS_DIR=comfyui_deps\
+            set DEPS_DIR=comfyui_deps\\
+
             set PYTHON_EXE=python_embeded\python.exe
 
             if not exist "%DEPS_DIR%" (
