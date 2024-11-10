@@ -108,13 +108,13 @@ jobs:
             echo All dependencies installed successfully.
             pause" > "1、Offline Install ComfyUI Dependencies.bat"
 
+            ls
+
             cd ..
 
-            DATE=$(date +'%Y%m%d')
-            "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_$DATE.zip" ComfyUI_windows_portable
-            mv "ComfyUI_windows_portable_$DATE.zip" ComfyUI/"ComfyUI_windows_portable_$DATE.zip"
-
-            cd ComfyUI_windows_portable
+            export DATE=$(date +'%Y%m%d')
+            
+            "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_${DATE}.zip" ComfyUI_windows_portable
 
             ls
 
@@ -126,5 +126,4 @@ jobs:
             access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
         - run: |
-            $DATE = Get-Date -Format "yyyyMMdd"
-            ossutil cp "ComfyUI_windows_portable_$DATE.zip" oss://mycomfyui/ComfyUI/
+            ossutil cp "ComfyUI_windows_portable_${{ env.DATE }}.zip" oss://mycomfyui/ComfyUI/
