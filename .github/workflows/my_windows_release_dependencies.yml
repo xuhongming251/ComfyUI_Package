@@ -49,7 +49,6 @@ jobs:
             cd ComfyUI
             ls -lah .
             python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r requirements.txt pygit2 -w ./temp_wheel_dir
-            python -m pip install --no-cache-dir ./temp_wheel_dir/*
             echo comfyui deps have installed...
             ls -lah temp_wheel_dir
             mv temp_wheel_dir cu${{ inputs.cu }}_python_deps
@@ -58,7 +57,5 @@ jobs:
         - uses: actions/cache/save@v4
           with:
             path: |
-              echo begin cache deps file
-              ls -lah
-              ComfyUI/cu${{ inputs.cu }}_python_deps.tar
+              cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
