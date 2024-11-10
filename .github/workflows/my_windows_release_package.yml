@@ -78,7 +78,7 @@ jobs:
 
             mkdir update
             cp -r ComfyUI/.ci/update_windows/* ./update/
-            cp -r ComfyUI/.ci/windows_base_files/run_nvidia_gpu.bat ./2、Start ComfyUI.bat
+            cp -r ComfyUI/.ci/windows_base_files/run_nvidia_gpu.bat ./"2、Start ComfyUI.bat"
 
             echo "@echo off
             setlocal enabledelayedexpansion
@@ -106,7 +106,7 @@ jobs:
             )
 
             echo All dependencies installed successfully.
-            pause" > 1、Offline Install ComfyUI Dependencies.bat
+            pause" > "1、Offline Install ComfyUI Dependencies.bat"
 
             cd ..
 
