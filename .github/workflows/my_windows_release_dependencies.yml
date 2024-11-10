@@ -1,4 +1,4 @@
-name: "Windows Release dependencies"
+name: "ComfyUI For Windows Release Dependencies"
 
 on:
   workflow_dispatch:

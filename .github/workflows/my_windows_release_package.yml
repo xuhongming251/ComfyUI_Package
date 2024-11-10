@@ -1,4 +1,4 @@
-name: "My Windows Release packaging"
+name: "ComfyUI For Windows Release Package"
 
 on:
   workflow_dispatch:
@@ -32,14 +32,14 @@ jobs:
         pull-requests: "read"
     runs-on: windows-latest
     steps:
-        # 第一步：使用相同的键恢复缓存
+
         - uses: actions/cache/restore@v4
           id: cache
           with:
             path: cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
-        # 第二步：如果找到缓存，则提取缓存
+
         - shell: bash
           run: |
             if [ -f cu${{ inputs.cu }}_python_deps.tar ]; then
@@ -72,7 +72,7 @@ jobs:
             mkdir ComfyUI_windows_portable
             mv python_embeded ComfyUI_windows_portable
             mv ComfyUI_copy ComfyUI_windows_portable/ComfyUI
-            mv ../cu${{ inputs.cu }}_python_deps ComfyUI_windows_portable/comfyui_python_deps
+            mv ../cu${{ inputs.cu }}_python_deps ComfyUI_windows_portable/comfyui_deps
 
             cd ComfyUI_windows_portable
 
@@ -85,7 +85,7 @@ jobs:
 
             cd /d %~dp0
 
-            set DEPS_DIR=comfyui_deps
+            set DEPS_DIR=comfyui_deps\
             set PYTHON_EXE=python_embeded\python.exe
 
             if not exist "%DEPS_DIR%" (
@@ -114,7 +114,7 @@ jobs:
 
             export DATE=$(date +'%Y%m%d')
             
-            "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_${DATE}.zip" ComfyUI_windows_portable
+            "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_${DATE}.zip" "ComfyUI_windows_portable\*"
 
             ls
 
