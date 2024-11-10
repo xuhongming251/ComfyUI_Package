@@ -112,7 +112,7 @@ jobs:
 
             DATE=$(date +'%Y%m%d')
             "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_$DATE.zip" ComfyUI_windows_portable
-            mv "ComfyUI_windows_portable_$DATE.7z" ComfyUI/"ComfyUI_windows_portable_$DATE.7z"
+            mv "ComfyUI_windows_portable_$DATE.zip" ComfyUI/"ComfyUI_windows_portable_$DATE.zip"
 
             cd ComfyUI_windows_portable
 
