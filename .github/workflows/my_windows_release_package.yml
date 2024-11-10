@@ -49,7 +49,7 @@ jobs:
               pwd
               ls
             else
-              echo "缓存未找到，继续执行其他操作。"
+              echo "not found cache!!!"
             fi
 
         - uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
             mkdir ComfyUI_windows_portable
             mv python_embeded ComfyUI_windows_portable
             mv ComfyUI_copy ComfyUI_windows_portable/ComfyUI
-            mv cu${{ inputs.cu }}_python_deps ComfyUI_windows_portable/comfyui_python_deps
+            mv ../cu${{ inputs.cu }}_python_deps ComfyUI_windows_portable/comfyui_python_deps
 
             cd ComfyUI_windows_portable
 
