@@ -1,0 +1,37 @@
+name: Restore and Extract Cached Tar File on Windows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  restore_and_extract:
+    runs-on: windows-latest  # 使用 Windows Runner
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Restore cached tar file
+      uses: actions/cache@v4
+      with:
+        path: ComfyUI/cu124_python_deps.tar  # 缓存的文件路径
+        key: Windows-build-cu124-12  # 缓存的键
+        restore-keys: |
+          Windows-build-cu124-12  # 恢复的键
+
+    - name: Extract tar file on Windows
+      shell: pwsh  # 使用 PowerShell
+      run: |
+        if (Test-Path "ComfyUI/cu124_python_deps.tar") {
+          Write-Host "Cache found. Extracting tar file..."
+          mkdir -p "ComfyUI/extracted_deps"  # 创建解压目标目录
+          tar -xzf "ComfyUI/cu124_python_deps.tar" -C "ComfyUI/extracted_deps"  # 解压 tar 文件
+          Write-Host "Extraction complete!"
+        } else {
+          Write-Host "Cache not found. Skipping extraction."
+        }
