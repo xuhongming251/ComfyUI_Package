@@ -111,7 +111,7 @@ jobs:
             cd ..
 
             DATE=$(date +'%Y%m%d')
-            "C:\Program Files\7-Zip\7z.exe" a -t7z -m0=lzma2 -mx=8 -mfb=64 -md=32m -ms=on -mf=BCJ2 "ComfyUI_windows_portable_$DATE.7z" ComfyUI_windows_portable
+            "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_$DATE.zip" ComfyUI_windows_portable
             mv "ComfyUI_windows_portable_$DATE.7z" ComfyUI/"ComfyUI_windows_portable_$DATE.7z"
 
             cd ComfyUI_windows_portable
@@ -126,5 +126,5 @@ jobs:
             access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
         - run: |
-            DATE=$(powershell -Command "(Get-Date).ToString('yyyyMMdd')")
-            ossutil cp "ComfyUI_windows_portable_$DATE.7z" oss://mycomfyui/ComfyUI/
+            DATE=$(date +'%Y%m%d')
+            ossutil cp "ComfyUI_windows_portable_$DATE.zip" oss://mycomfyui/ComfyUI/
