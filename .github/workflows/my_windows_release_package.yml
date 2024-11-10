@@ -36,7 +36,7 @@ jobs:
         - uses: actions/cache/restore@v4
           id: cache
           with:
-            path: ComfyUI/cu${{ inputs.cu }}_python_deps.tar
+            path: cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
         # 第二步：如果找到缓存，则提取缓存

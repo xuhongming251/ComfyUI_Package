@@ -53,9 +53,10 @@ jobs:
             ls -lah temp_wheel_dir
             mv temp_wheel_dir cu${{ inputs.cu }}_python_deps
             tar cf cu${{ inputs.cu }}_python_deps.tar cu${{ inputs.cu }}_python_deps
+            mv cu${{ inputs.cu }}_python_deps.tar ../
+            ls -lah
 
         - uses: actions/cache/save@v4
           with:
-            path: |
-              ComfyUI/cu${{ inputs.cu }}_python_deps.tar
+            path: cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
