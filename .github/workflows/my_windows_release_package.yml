@@ -126,5 +126,5 @@ jobs:
             access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
         - run: |
-            DATE=$(date +'%Y%m%d')
+            $DATE = Get-Date -Format "yyyyMMdd"
             ossutil cp "ComfyUI_windows_portable_$DATE.zip" oss://mycomfyui/ComfyUI/
