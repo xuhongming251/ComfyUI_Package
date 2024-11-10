@@ -32,19 +32,26 @@ jobs:
         pull-requests: "read"
     runs-on: windows-latest
     steps:
+        # 第一步：使用相同的键恢复缓存
         - uses: actions/cache/restore@v4
           id: cache
           with:
             path: |
               cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+
+        # 第二步：如果找到缓存，则提取缓存
         - shell: bash
           run: |
-            mv cu${{ inputs.cu }}_python_deps.tar ../
-            cd ..
-            tar xf cu${{ inputs.cu }}_python_deps.tar
-            pwd
-            ls
+            if [ -f cu${{ inputs.cu }}_python_deps.tar ]; then
+              mv cu${{ inputs.cu }}_python_deps.tar ../
+              cd ..
+              tar xf cu${{ inputs.cu }}_python_deps.tar
+              pwd
+              ls
+            else
+              echo "缓存未找到，继续执行其他操作。"
+            fi
 
         - uses: actions/checkout@v4
           with:
