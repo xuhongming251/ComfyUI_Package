@@ -19,7 +19,7 @@ jobs:
     - name: Restore cached tar file
       uses: actions/cache@v4
       with:
-        path: cu124_python_deps.tar  # 缓存的文件路径
+        path: ComfyUI/cu124_python_deps.tar  # 缓存的文件路径
         key: Windows-build-cu124-12  # 缓存的键
         restore-keys: |
           Windows-build-cu124-12  # 恢复的键
