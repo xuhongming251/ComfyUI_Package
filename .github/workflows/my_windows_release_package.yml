@@ -133,7 +133,6 @@ jobs:
             ## The AccessKey Secret of the credential.
             access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-        - shell: bash
           - run: |
             DATE=$(date +'%Y%m%d')
             ossutil cp "ComfyUI_windows_portable_$DATE.7z" oss://mycomfyui/ComfyUI/
