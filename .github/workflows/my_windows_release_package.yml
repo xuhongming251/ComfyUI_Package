@@ -127,4 +127,5 @@ jobs:
 
         - run: |
             $DATE = Get-Date -Format "yyyyMMdd"
+            ossutil rm "oss://mycomfyui/ComfyUI/ComfyUI_windows_portable_$DATE.zip"
             ossutil cp "ComfyUI_windows_portable_$DATE.zip" oss://mycomfyui/ComfyUI/
