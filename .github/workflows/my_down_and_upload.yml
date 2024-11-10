@@ -1,14 +1,14 @@
-name: 下载并上传到OSS
+name: Download
 
 on:
   workflow_dispatch:
     inputs:
       file-url:
-        description: '要下载的文件 URL'
+        description: 'URL'
         required: true
-        default: 'https://example.com/path/to/your/file.zip'
+        default: ''
       file-name:
-        description: '上传到 OSS 时使用的文件名'
+        description: 'file name'
         required: false
         default: ''
 
@@ -31,10 +31,10 @@ jobs:
         # 如果没有提供自定义文件名，使用解析出的文件名
         if [ -z "${{ github.event.inputs.file-name }}" ]; then
           echo "没有提供自定义文件名，使用解析后的文件名。"
-          export UPLOAD_FILE_NAME=$FILENAME
+          echo "UPLOAD_FILE_NAME=$FILENAME" >> $GITHUB_ENV
         else
           echo "使用自定义文件名: ${{ github.event.inputs.file-name }}"
-          export UPLOAD_FILE_NAME="${{ github.event.inputs.file-name }}"
+          echo "UPLOAD_FILE_NAME=${{ github.event.inputs.file-name }}" >> $GITHUB_ENV
         fi
 
     - name: 设置 ossutil
