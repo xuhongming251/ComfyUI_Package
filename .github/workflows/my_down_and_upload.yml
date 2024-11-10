@@ -19,9 +19,25 @@ jobs:
     steps:
     - name: 使用 wget 下载文件
       run: |
-        # 从 URL 下载文件，并保存到一个默认的文件名
-        wget ${{ github.event.inputs.file-url }} -O downloaded_file
-        echo "已下载文件: downloaded_file"
+        # 下载文件的目标文件名
+        output_file="downloaded_file"
+        
+        # 使用 --progress=dot 获取下载进度
+        wget --progress=dot -q ${{ github.event.inputs.file-url }} -O $output_file &
+        
+        # 获取 wget 进程的 PID
+        pid=$!
+
+        # 每5秒打印一次下载进度
+        while kill -0 $pid 2>/dev/null; do
+          # 查看 wget 的进度信息
+          echo "下载进度："
+          tail -n 10 $output_file.log # 显示 wget 的最新进度信息
+          sleep 5
+        done
+
+        # 下载完成后输出文件路径
+        echo "已下载文件: $output_file"
 
     - name: 解析文件名
       run: |
