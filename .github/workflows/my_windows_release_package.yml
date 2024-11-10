@@ -20,9 +20,6 @@ on:
         required: true
         type: string
         default: "7"
-#  push:
-#    branches:
-#      - master
 
 jobs:
   package_comfyui:
@@ -38,8 +35,13 @@ jobs:
             path: |
               cu${{ inputs.cu }}_python_deps.tar
             key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+          
         - shell: bash
           run: |
+            if [ ! -f cu${{ inputs.cu }}_python_deps.tar ]; then
+              echo "Dependency tar file not found!"
+              exit 1
+            fi
             mv cu${{ inputs.cu }}_python_deps.tar ../
             cd ..
             tar xf cu${{ inputs.cu }}_python_deps.tar
@@ -50,6 +52,7 @@ jobs:
           with:
             fetch-depth: 0
             persist-credentials: false
+        
         - shell: bash
           run: |
             git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
@@ -62,7 +65,7 @@ jobs:
             ./python.exe get-pip.py
             sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
             cd ..
-
+            
             mkdir ComfyUI_windows_portable
             mv python_embeded ComfyUI_windows_portable
             mv ComfyUI_copy ComfyUI_windows_portable/ComfyUI
@@ -72,7 +75,7 @@ jobs:
 
             mkdir update
             cp -r ComfyUI/.ci/update_windows/* ./update/
-            cp -r ComfyUI/.ci/windows_base_files/run_nvidia_gpu.bat ./2、Start ComfyUI.bat
+            cp -r ComfyUI/.ci/windows_base_files/run_nvidia_gpu.bat ./"2、Start ComfyUI.bat"
 
             echo "@echo off
             setlocal enabledelayedexpansion
@@ -82,16 +85,16 @@ jobs:
             set DEPS_DIR=comfyui_deps
             set PYTHON_EXE=python_embeded\python.exe
 
-            if not exist "%DEPS_DIR%" (
+            if not exist \"%DEPS_DIR%\" (
                 echo Directory %DEPS_DIR% does not exist.
                 pause
                 exit /b 1
             )
 
-            for %%f in ("%DEPS_DIR%\*.whl") do (
+            for %%f in (\"%DEPS_DIR%\\*.whl\") do (
                 set FILE=%%f
                 echo Installing !FILE!
-                "%PYTHON_EXE%" -s -m pip install --no-index --find-links="%DEPS_DIR%" "!FILE!"
+                \"%PYTHON_EXE%\" -s -m pip install --no-index --find-links=\"%DEPS_DIR%\" \"!FILE!\"
                 if errorlevel 1 (
                     echo Failed to install !FILE!
                     pause
@@ -100,11 +103,11 @@ jobs:
             )
 
             echo All dependencies installed successfully.
-            pause" > 1、Offline Install ComfyUI Dependencies.bat
+            pause" > "1、Offline Install ComfyUI Dependencies.bat"
 
-            cd ..
+            cd ..  
 
-            DATE=$(date +'%Y%m%d')
+            DATE=$(powershell -Command "(Get-Date).ToString('yyyyMMdd')")
             "C:\Program Files\7-Zip\7z.exe" a -t7z -m0=lzma2 -mx=8 -mfb=64 -md=32m -ms=on -mf=BCJ2 "ComfyUI_windows_portable_$DATE.7z" ComfyUI_windows_portable
             mv "ComfyUI_windows_portable_$DATE.7z" ComfyUI/"ComfyUI_windows_portable_$DATE.7z"
 
@@ -112,29 +115,13 @@ jobs:
 
             ls
 
-        # - name: Upload binaries to release
-        #   uses: svenstaro/upload-release-action@v2
-        #   with:
-        #         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        #         file: new_ComfyUI_windows_portable_nvidia_cu${{ inputs.cu }}_or_cpu.7z
-        #         tag: "latest"
-        #         overwrite: true
-
         - uses: yizhoumo/setup-ossutil@v2
           with:
-            ## The version to download and use, or 'latest' for the latest version.
             ossutil-version: '1.7.18'
-
-            # The following parameters are (optionally) used to config the credential.
-            ## The endpoint of the region in which the bucket is located.
             endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-            ## The AccessKey ID of the credential.
             access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-            ## The AccessKey Secret of the credential.
             access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-          - run: |
-            DATE=$(date +'%Y%m%d')
+        - run: |
+            DATE=$(powershell -Command "(Get-Date).ToString('yyyyMMdd')")
             ossutil cp "ComfyUI_windows_portable_$DATE.7z" oss://mycomfyui/ComfyUI/
-
-
