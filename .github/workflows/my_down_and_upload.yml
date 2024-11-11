@@ -20,7 +20,7 @@ jobs:
     - name: 使用 wget 下载文件
       run: |
         # 从 URL 下载文件，并保存到一个默认的文件名
-        wget -q ${{ github.event.inputs.file-url }} -O downloaded_file
+        wget -q "${{ github.event.inputs.file-url }}" -O downloaded_file
         echo "已下载文件: downloaded_file"
 
     - name: 解析文件名
