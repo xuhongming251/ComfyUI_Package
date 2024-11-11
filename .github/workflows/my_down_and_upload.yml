@@ -26,7 +26,7 @@ jobs:
     - name: 解析文件名
       run: |
         # 使用 URL 解析出文件名（从 URL 中提取文件名）
-        FILENAME=$(basename ${{ github.event.inputs.file-url }})
+        FILENAME=$(basename "${{ github.event.inputs.file-url }}")
         echo "从 URL 中解析出的文件名: $FILENAME"
         # 如果没有提供自定义文件名，使用解析出的文件名
         if [ -z "${{ github.event.inputs.file-name }}" ]; then
