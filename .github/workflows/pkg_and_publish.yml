@@ -50,8 +50,10 @@ jobs:
       - name: Print Input Vars
         shell: bash
         run: |
-          echo 'input var list:'
-          echo ${{ inputs }}
+          echo 'Input variable list:'
+          for var in $(printenv | grep '^INPUT_'); do
+            echo "$var"
+          done
 
       # 尝试恢复缓存
       - name: Restore dependencies cache
