@@ -89,11 +89,16 @@ jobs:
           echo 'after extract deps'
           ls -lah .
       
-      # 如果没有缓存或者强制不使用缓存，则执行依赖安装
-      - if: steps.restore_cache.outputs.cache-hit == 'false' || ${{ inputs.force_no_cache }} == 'true'
-        name: Build dependencies
+      # 如果没有缓存或者强制不使用缓存，则重新执行依赖安装
+      - name: Build dependencies
+        if: steps.restore_cache.outputs.cache-hit == 'false' || ${{ inputs.force_no_cache }} == 'true'
         shell: bash
         run: |
+          echo "steps.restore_cache.outputs.cache-hit:"
+          echo ${{ steps.restore_cache.outputs.cache-hit}}
+          echo "force_no_cache:"
+          echo ${{ inputs.force_no_cache }}
+
           echo "current path:"
           pwd
           git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
