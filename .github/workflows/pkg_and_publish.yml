@@ -53,8 +53,6 @@ jobs:
           echo 'Input variable list:'
           echo "force_no_cache:"
           echo ${{ inputs.force_no_cache }}
-          echo "steps.restore_cache.outputs.cache-hit:"
-          echo ${{ steps.restore_cache.outputs.cache-hit }}
 
       # 尝试恢复缓存
       - name: Restore dependencies cache
@@ -66,15 +64,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-cu${{ inputs.cu }}-
 
+      - name: Print restore_cache Result
+        shell: bash
+        run: |
+          echo "steps.restore_cache.outputs.cache-hit:"
+          echo ${{ steps.restore_cache.outputs.cache-hit}}
+
       # 没有缓存则打印个日志
       - name: IF No dependencies
-        if: ${{ steps.restore_cache.outputs.cache-hit }} != 'true'
+        if: steps.restore_cache.outputs.cache-hit != 'true'
         run: |
           echo "No cache hit, skipping extraction."
 
       # 如果恢复有文件，则解压恢复的文件
-      - name: Extract dependencies
-        if: ${{ steps.restore_cache.outputs.cache-hit }} == 'true'
+      - name: Have and Extract dependencies
+        if: steps.restore_cache.outputs.cache-hit == 'true'
         shell: bash
         run: |
           echo "current path:"
@@ -86,7 +90,7 @@ jobs:
           ls -lah .
       
       # 如果没有缓存或者强制不使用缓存，则执行依赖安装
-      - if: ${{ steps.restore_cache.outputs.cache-hit }} == 'false' || ${{ inputs.force_no_cache }} == 'true'
+      - if: steps.restore_cache.outputs.cache-hit == 'false' || ${{ inputs.force_no_cache }} == 'true'
         name: Build dependencies
         shell: bash
         run: |
@@ -110,7 +114,7 @@ jobs:
           ls -lah .
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
-      - if: ${{ steps.restore_cache.outputs.cache-hit }} == 'false' || ${{ inputs.force_no_cache }} == 'true'
+      - if: steps.restore_cache.outputs.cache-hit == 'false' || ${{ inputs.force_no_cache }} == 'true'
         name: Save dependencies cache
         uses: actions/cache/save@v4
         with:
