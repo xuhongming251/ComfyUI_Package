@@ -73,6 +73,7 @@ jobs:
           echo "steps.restore_cache.outputs.cache-hit:"
           echo ${{ steps.restore_cache.outputs.cache-hit}}
 
+
       # 没有缓存则打印个日志
       - name: IF No dependencies
         if: steps.restore_cache.outputs.cache-hit != 'true'
@@ -136,7 +137,7 @@ jobs:
         uses: TheRealRyGuy/clear-cache-action@v0.1
         with:
           # Github Token
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
       # TODO，如果强制更新缓存，则需要删除原来缓存
