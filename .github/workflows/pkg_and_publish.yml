@@ -40,6 +40,8 @@ on:
 jobs:
   build_dependencies:
     runs-on: windows-latest
+    # 设置GITHUB_TOKEN权限
+    permissions: write-all
     steps:
       # 设置Python版本
       - uses: actions/setup-python@v5
