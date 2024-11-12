@@ -57,6 +57,7 @@ jobs:
       # 尝试恢复缓存
       - name: Restore dependencies cache
         id: restore_cache
+        if: ${{ inputs.force_no_cache != 'true' }}
         uses: actions/cache/restore@v4
         with:
           path: cu${{ inputs.cu }}_python_deps.tar
@@ -76,9 +77,21 @@ jobs:
         run: |
           echo "No cache hit, skipping extraction."
 
-      # 如果恢复有文件，则解压恢复的文件
+
+      # 拉取ComfyUI代码
+      - name: Clone ComfyUI From Git
+        shell: bash
+        run: |
+          echo "current path:"
+          pwd
+          git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
+          cd ComfyUI
+          echo "Newest ComfyUI files:"
+          ls -lah .
+      
+      # 如果恢复有文件，并且不强制更新缓存，则解压原来的缓存
       - name: Have and Extract dependencies
-        if: steps.restore_cache.outputs.cache-hit == 'true'
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_no_cache != 'true' }}
         shell: bash
         run: |
           echo "current path:"
@@ -88,8 +101,8 @@ jobs:
           tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
           echo 'after extract deps'
           ls -lah .
-      
-      # 如果没有缓存或者强制不使用缓存，则重新执行依赖安装
+
+      # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
       - name: Build dependencies
         if: ${{ steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true' }}
         shell: bash
@@ -101,10 +114,7 @@ jobs:
 
           echo "current path:"
           pwd
-          git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
           cd ComfyUI
-          echo "Newest ComfyUI files:"
-          ls -lah .
           python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r requirements.txt pygit2 -w ./temp_wheel_dir
           echo "ComfyUI Deps have installed, the whl files:"
           ls -lah temp_wheel_dir
@@ -119,8 +129,17 @@ jobs:
           ls -lah .
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
-      - if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_no_cache == 'true' }}
+      # 如果强制更新缓存，则需要删除原来缓存
+      - if: ${{ steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true' }}
         name: Save dependencies cache
+        id: save_cache
+        run: |
+          if [[ "${{ inputs.force_no_cache }}" == "true" ]]; then
+            echo "Forcing cache update, deleting old cache..."
+            actions/cache/delete@v4 \
+              with: 
+                key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+          fi
         uses: actions/cache/save@v4
         with:
           path: cu${{ inputs.cu }}_python_deps.tar
