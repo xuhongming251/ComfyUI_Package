@@ -51,7 +51,10 @@ jobs:
         shell: bash
         run: |
           echo 'Input variable list:'
+          echo "force_no_cache:"
           echo ${{ inputs.force_no_cache }}
+          echo "steps.restore_cache.outputs.cache-hit:"
+          echo steps.restore_cache.outputs.cache-hit
 
       # 尝试恢复缓存
       - name: Restore dependencies cache
