@@ -51,9 +51,7 @@ jobs:
         shell: bash
         run: |
           echo 'Input variable list:'
-          for var in $(printenv | grep '^INPUT_'); do
-            echo "$var"
-          done
+          echo ${{ inputs.force_no_cache }}
 
       # 尝试恢复缓存
       - name: Restore dependencies cache
@@ -84,7 +82,7 @@ jobs:
       
 
       # 如果没有缓存或者强制不使用缓存，则执行依赖安装
-      - if: steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true'
+      - if: steps.restore_cache.outputs.cache-hit == 'false' || ${{ inputs.force_no_cache }} == 'true'
         name: Build dependencies
         shell: bash
         run: |
@@ -100,7 +98,7 @@ jobs:
           ls -lah
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
-      - if: steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true'
+      - if: steps.restore_cache.outputs.cache-hit == 'false' || ${{ inputs.force_no_cache }} == 'true'
         name: Save dependencies cache
         uses: actions/cache/save@v4
         with:
