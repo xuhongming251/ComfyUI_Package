@@ -64,9 +64,10 @@ jobs:
       # 如果恢复有文件，则解压恢复的文件
       - name: Extract dependencies
         if: steps.restore_cache.outputs.cache-hit == 'true'
+        shell: bash
         run: |
           echo 'begin extract deps'
-          ls -lah
+          ls -lah .
           tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
           pwd
           ls -lah
