@@ -31,8 +31,8 @@ on:
         type: string
         default: "7"
       
-      force_no_cache:
-        description: 'Force no cache (true/false)'
+      force_update_deps:
+        description: 'Force update deps (true/false)'
         required: false
         type: string
         default: 'false'
@@ -53,13 +53,13 @@ jobs:
         shell: bash
         run: |
           echo 'Input variable list:'
-          echo "force_no_cache:"
-          echo ${{ inputs.force_no_cache }}
+          echo "force_update_deps:"
+          echo ${{ inputs.force_update_deps }}
 
       # 尝试恢复缓存
       - name: Restore dependencies cache
         id: restore_cache
-        if: ${{ inputs.force_no_cache != 'true' }}
+        if: ${{ inputs.force_update_deps != 'true' }}
         uses: actions/cache/restore@v4
         with:
           path: cu${{ inputs.cu }}_python_deps.tar
@@ -94,7 +94,7 @@ jobs:
       
       # 如果恢复有文件，并且不强制更新缓存，则解压原来的缓存
       - name: If Exist Chche Dependencies, Extract dependencies
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_no_cache != 'true' }}
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_update_deps != 'true' }}
         shell: bash
         run: |
           echo "current path:"
@@ -107,13 +107,13 @@ jobs:
 
       # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
       - name: Build dependencies
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true' }}
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_update_deps == 'true' }}
         shell: bash
         run: |
           echo "steps.restore_cache.outputs.cache-hit:"
           echo ${{ steps.restore_cache.outputs.cache-hit}}
-          echo "force_no_cache:"
-          echo ${{ inputs.force_no_cache }}
+          echo "force_update_deps:"
+          echo ${{ inputs.force_update_deps }}
 
           echo "current path:"
           pwd
@@ -131,15 +131,15 @@ jobs:
           pwd
           ls -lah .
 
-      # 删除旧缓存（如果强制更新）
+      # 需要缓存条件时，直接删除旧缓存
       - uses: prantlf/delete-cache-action@v2
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
         with:
           key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
-      # TODO，如果强制更新缓存，则需要删除原来缓存
-      - if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_no_cache == 'true' }}
-        name: Save dependencies cache
+      - name: Save dependencies cache
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
         uses: actions/cache/save@v4
         with:
           path: cu${{ inputs.cu }}_python_deps.tar
