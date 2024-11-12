@@ -46,6 +46,13 @@ jobs:
         with:
           python-version: 3.${{ inputs.python_minor }}.${{ inputs.python_patch }}
 
+      # 打印输入消息
+      - name: Print Input Vars
+        shell: bash
+        run: |
+          echo 'input var list:'
+          echo ${{ inputs }}
+
       # 尝试恢复缓存
       - name: Restore dependencies cache
         id: restore_cache
