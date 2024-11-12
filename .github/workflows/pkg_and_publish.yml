@@ -34,6 +34,7 @@ on:
       force_no_cache:
         description: 'Force no cache (true/false)'
         required: false
+        type: string
         default: 'false'
 
 jobs:
