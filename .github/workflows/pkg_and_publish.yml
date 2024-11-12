@@ -1,0 +1,80 @@
+name: "PKG and publish"
+
+on:
+  workflow_dispatch:
+    inputs:
+      xformers:
+        description: 'xformers version'
+        required: false
+        type: string
+        default: ""
+      extra_dependencies:
+        description: 'extra dependencies'
+        required: false
+        type: string
+        default: ""
+      cu:
+        description: 'cuda version'
+        required: true
+        type: string
+        default: "124"
+
+      python_minor:
+        description: 'python minor version'
+        required: true
+        type: string
+        default: "12"
+
+      python_patch:
+        description: 'python patch version'
+        required: true
+        type: string
+        default: "7"
+      
+      force_no_cache:
+        description: 'Force no cache (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  build_dependencies:
+    runs-on: windows-latest
+    steps:
+      # 设置Python版本
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.${{ inputs.python_minor }}.${{ inputs.python_patch }}
+
+      # 尝试恢复缓存
+      - name: Restore dependencies cache
+        id: restore_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: cu${{ inputs.cu }}_python_deps.tar
+          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+          restore-keys: |
+            ${{ runner.os }}-build-cu${{ inputs.cu }}-
+
+      # 如果没有缓存或者强制不使用缓存，则执行依赖安装
+      - if: steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true'
+        name: Build dependencies
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
+          cd ComfyUI
+          ls -lah .
+          python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r requirements.txt pygit2 -w ./temp_wheel_dir
+          echo comfyui deps have installed...
+          ls -lah temp_wheel_dir
+          mv temp_wheel_dir cu${{ inputs.cu }}_python_deps
+          tar cf cu${{ inputs.cu }}_python_deps.tar cu${{ inputs.cu }}_python_deps
+          mv cu${{ inputs.cu }}_python_deps.tar ../
+          ls -lah
+
+      # 如果没有缓存或强制不使用缓存，则保存缓存
+      - if: steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true'
+        name: Save dependencies cache
+        uses: actions/cache/save@v4
+        with:
+          path: cu${{ inputs.cu }}_python_deps.tar
+          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
