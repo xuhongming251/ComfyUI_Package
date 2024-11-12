@@ -55,6 +55,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-cu${{ inputs.cu }}-
 
+      # 如果恢复有文件，则解压恢复的文件
+      - name: Extract dependencies
+        if: steps.restore_cache.outputs.cache-hit == 'true'
+        run: |
+          echo 'begin extract deps'
+          ls -lah
+          tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
+          pwd
+          ls -lah
+        if: steps.restore_cache.outputs.cache-hit != 'true'
+        run: |
+          echo "No cache hit, skipping extraction."
+
       # 如果没有缓存或者强制不使用缓存，则执行依赖安装
       - if: steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_no_cache == 'true'
         name: Build dependencies
