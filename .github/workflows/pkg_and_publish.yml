@@ -131,9 +131,10 @@ jobs:
       # 删除旧缓存（如果强制更新）
       - name: Delete cache
         if: ${{ inputs.force_no_cache == 'true' }}
-        uses: actions/cache/delete@v4
+        uses: TheRealRyGuy/clear-cache-action@v0.1
         with:
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+          # Github Token
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
       # TODO，如果强制更新缓存，则需要删除原来缓存
