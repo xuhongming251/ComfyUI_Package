@@ -44,9 +44,9 @@ jobs:
           
           EXCLUDE_GIT=${{ github.event.inputs.exclude_git_directory }}
           if [[ "$EXCLUDE_GIT" == "true" ]]; then
-          zip -r ${{ env.UPLOAD_FILE_NAME }} . -x "*/.git/*"
+          zip -r tmp.zip . -x "*/.git/*"
           else
-          zip -r ${{ env.UPLOAD_FILE_NAME }} .
+          zip -r tmp.zip .
           fi
           
           echo "压缩后"
@@ -63,4 +63,4 @@ jobs:
     - name: Upload OSS
       run: |
         echo "正在上传 $UPLOAD_FILE_NAME 到 OSS..."
-        ossutil cp $UPLOAD_FILE_NAME oss://xusharefile/download/$UPLOAD_FILE_NAME
+        ossutil cp tmp.zip oss://xusharefile/download/$UPLOAD_FILE_NAME
