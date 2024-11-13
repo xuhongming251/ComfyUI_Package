@@ -260,6 +260,19 @@ jobs:
             echo "ComfyUI_windows_portable files:"
             pwd
             ls -lh ./ComfyUI_windows_portable
+      - name: ZIP Pkg Files
+        shell: bash
+        run: |
+            echo "current path:"
+            pwd
+
+            # 获取当前北京时间，格式化为年月日
+            current_date=$(date +'%Y%m%d' -u -d "+8 hours")
+            # 创建带有时间戳的压缩包
+            zip -r "ComfyUI_windows_portable_${current_date}.zip" ./ComfyUI_windows_portable
+            echo "current path:"
+            pwd
+            ls -lh .
 
       # 需要缓存条件时，直接删除旧缓存
       - name: Delete Old Cache File If Need Update Cache
