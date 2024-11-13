@@ -40,8 +40,8 @@ on:
 jobs:
   build_dependencies:
     runs-on: windows-latest
-    # 设置GITHUB_TOKEN权限
-    permissions: write-all
+    # # 设置GITHUB_TOKEN权限
+    # permissions: write-all
     steps:
       # 设置Python版本
       - uses: actions/setup-python@v5
@@ -73,13 +73,11 @@ jobs:
           echo "steps.restore_cache.outputs.cache-hit:"
           echo ${{ steps.restore_cache.outputs.cache-hit}}
 
-
       # 没有缓存则打印个日志
       - name: IF No dependencies
         if: steps.restore_cache.outputs.cache-hit != 'true'
         run: |
           echo "No cache hit, skipping extraction."
-
 
       # 拉取ComfyUI代码
       - name: Clone ComfyUI From Git
@@ -92,7 +90,7 @@ jobs:
           echo "Newest ComfyUI files:"
           ls -lah .
       
-      # 如果恢复有文件，并且不强制更新缓存，则解压原来的缓存
+      # 如果恢复有依赖文件，并且不强制更新缓存，则解压原来的缓存
       - name: If Exist Chche Dependencies, Extract dependencies
         if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_update_deps != 'true' }}
         shell: bash
@@ -136,7 +134,7 @@ jobs:
           pwd
           ls -lah .
 
-      # 下载Python 二进制文件，并修改引入相对目录ComfyUI
+      # 下载Python 二进制文件，并修改引入相对ComfyUI的目录
       - name: Download Python Bin For embed
         shell: bash
         run: |
@@ -160,6 +158,7 @@ jobs:
           pwd
           ls -lh .
 
+      # 生成可离线安装依赖的脚本
       - name: "Gen '1、Offline Install ComfyUI Dependencies.bat' file"
         shell: bash
         run: |
@@ -198,6 +197,17 @@ jobs:
             echo "'1、Offline Install ComfyUI Dependencies.bat' file Content:"
             cat "1、Offline Install ComfyUI Dependencies.bat"
 
+      - name: "Copy run_nvidia_gpu.bat, Gen '2、Start ComfyUI.bat' file"
+        shell: bash
+        run: |
+          echo "current path:"
+          pwd
+          cp -r ComfyUI/.ci/windows_base_files/run_nvidia_gpu.bat ./"2、Start ComfyUI.bat"
+          ls -lh .
+          echo "'2、Start ComfyUI.bat' file Content:"
+          cat "2、Start ComfyUI.bat"
+
+      # 生成进入Python环境的脚本
       - name: "Gen 'Enter Current Python Env.bat' file"
         shell: bash
         run: |
