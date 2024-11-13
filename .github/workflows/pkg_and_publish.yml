@@ -269,7 +269,8 @@ jobs:
             # 获取当前北京时间，格式化为年月日
             current_date=$(date +'%Y%m%d' -u -d "+8 hours")
             # 创建带有时间戳的压缩包
-            zip -r "ComfyUI_windows_portable_${current_date}.zip" ./ComfyUI_windows_portable
+            "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=6 "ComfyUI_windows_portable_${current_date}.zip" ComfyUI_windows_portable
+            echo "UPLOAD_FILE_NAME=ComfyUI_windows_portable_${current_date}.zip" >> $GITHUB_ENV
             echo "current path:"
             pwd
             ls -lh .
@@ -288,3 +289,17 @@ jobs:
         with:
           path: cu${{ inputs.cu }}_python_deps.tar
           key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+
+      - name: Prepare ossutil tool
+        uses: yizhoumo/setup-ossutil@v2
+        with:
+          ossutil-version: '1.7.18'
+          endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      - name: Upload OSS
+        run: |
+          ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
+          ossutil cp $UPLOAD_FILE_NAME oss://mycomfyui/ComfyUI/
+
