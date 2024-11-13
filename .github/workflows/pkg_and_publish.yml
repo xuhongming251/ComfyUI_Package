@@ -104,6 +104,11 @@ jobs:
           tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
           echo 'after extract deps'
           ls -lah .
+          mv cu${{ inputs.cu }}_python_deps comfyui_deps
+          echo 'after rename deps dir'
+          ls -lah .
+          echo 'comfyui_deps files list'
+          ls -lah ./comfyui_deps
 
       # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
       - name: Download python .whl dependence files for comfyui
@@ -118,7 +123,7 @@ jobs:
           echo "current path:"
           pwd
           echo "down whl cmd:"
-          echo "python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps"
+          echo "python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r ./../ComfyUI/requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps"
           echo "begin exec down cmd.."
           python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps
           echo "ComfyUI whl deps have downloaded, the whl files:"
@@ -126,6 +131,7 @@ jobs:
           tar cf cu${{ inputs.cu }}_python_deps.tar cu${{ inputs.cu }}_python_deps
           echo "deps tar file info:"
           ls -lh cu${{ inputs.cu }}_python_deps.tar
+          mv cu${{ inputs.cu }}_python_deps comfyui_deps
           echo "current path:"
           pwd
           ls -lah .
