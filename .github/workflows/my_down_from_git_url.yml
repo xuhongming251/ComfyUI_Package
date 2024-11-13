@@ -11,6 +11,11 @@ on:
         description: 'file name'
         required: false
         default: ''
+      exclude_git_directory:
+        description: 'exclude git directory(true/false)'
+        required: false
+        type: string
+        default: "true"
 
 jobs:
   download-upload:
@@ -34,12 +39,19 @@ jobs:
 
     - name: Clone and ZIP
       run: |
-        git clone --depth 1 "${{ github.event.inputs.file-url }}"
-        echo "已clone完成"
-        zip -r ${{ env.UPLOAD_FILE_NAME }} .
-        echo "压缩后"
-        ls 
-
+          git clone --depth 1 "${{ github.event.inputs.file-url }}"
+          echo "已clone完成"
+          
+          EXCLUDE_GIT=${{ github.event.inputs.exclude_git_directory }}
+          if [[ "$EXCLUDE_GIT" == "true" ]]; then
+          zip -r ${{ env.UPLOAD_FILE_NAME }} . -x "*/.git/*"
+          else
+          zip -r ${{ env.UPLOAD_FILE_NAME }} .
+          fi
+          
+          echo "压缩后"
+          ls
+  
     - name: set ossutil
       uses: yizhoumo/setup-ossutil@v2
       with:
