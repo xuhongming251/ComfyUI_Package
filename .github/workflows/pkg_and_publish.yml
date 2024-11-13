@@ -131,6 +131,7 @@ jobs:
           pwd
           ls -lah .
 
+      # 下载Python 二进制文件，并修改引入相对目录ComfyUI
       - name: Download Python Bin For embed
         shell: bash
         run: |
@@ -153,6 +154,44 @@ jobs:
           echo "current path:"
           pwd
           ls -lh .
+
+      - name: "Gen '1、Offline Install ComfyUI Dependencies.bat' file"
+        shell: bash
+        run: |
+            echo "@echo off
+            setlocal enabledelayedexpansion
+
+            cd /d %~dp0
+
+            set DEPS_DIR=comfyui_deps\\
+
+            set PYTHON_EXE=python_embeded\python.exe
+
+            if not exist "%DEPS_DIR%" (
+                echo Directory %DEPS_DIR% does not exist.
+                pause
+                exit /b 1
+            )
+
+            for %%f in ("%DEPS_DIR%\*.whl") do (
+                set FILE=%%f
+                echo Installing !FILE!
+                "%PYTHON_EXE%" -s -m pip install --no-index --find-links="%DEPS_DIR%" "!FILE!"
+                if errorlevel 1 (
+                    echo Failed to install !FILE!
+                    pause
+                    exit /b 1
+                )
+            )
+
+            pause" > "1、Offline Install ComfyUI Dependencies.bat"
+
+            echo "current path:"
+            pwd
+            ls -lh .
+
+            echo "'1、Offline Install ComfyUI Dependencies.bat' file Content:"
+            cat "1、Offline Install ComfyUI Dependencies.bat"
 
 
       # 需要缓存条件时，直接删除旧缓存
