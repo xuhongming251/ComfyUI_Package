@@ -198,9 +198,39 @@ jobs:
             echo "'1、Offline Install ComfyUI Dependencies.bat' file Content:"
             cat "1、Offline Install ComfyUI Dependencies.bat"
 
+      - name: "Gen 'Enter Current Python Env.bat' file"
+        shell: bash
+        run: |
+            echo "@echo off
+            setlocal enabledelayedexpansion
+
+            cd /d %~dp0
+
+            :: 设置Python解释器路径
+            set PYTHON_EXE=python_embeded\python.exe
+
+            :: 检查Python解释器是否存在
+            if not exist "%PYTHON_EXE%" (
+                echo Python executable not found at %PYTHON_EXE%
+                pause
+                exit /b 1
+            )
+
+            :: 启动Python环境，并保持命令行窗口打开以便用户可以运行pip install命令
+            echo Starting Python environment...
+            cmd /k "%PYTHON_EXE%" -m pip" > "Enter Current Python Env.bat"
+
+            echo "current path:"
+            pwd
+            ls -lh .
+
+            echo "'Enter Current Python Env.bat' file content:"
+            cat "Enter Current Python Env.bat"
+
 
       # 需要缓存条件时，直接删除旧缓存
-      - uses: prantlf/delete-cache-action@v2
+      - name: Delete Old Cache File If Need Update Cache
+        uses: prantlf/delete-cache-action@v2
         if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
         with:
           key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
