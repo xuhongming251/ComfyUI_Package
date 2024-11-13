@@ -131,6 +131,30 @@ jobs:
           pwd
           ls -lah .
 
+      - name: Download Python Bin For embed
+        shell: bash
+        run: |
+          echo "current path:"
+          pwd
+          ls -lh .
+          curl https://www.python.org/ftp/python/3.${{ inputs.python_minor }}.${{ inputs.python_patch }}/python-3.${{ inputs.python_minor }}.${{ inputs.python_patch }}-embed-amd64.zip -o python_embeded.zip
+          unzip python_embeded.zip -d python_embeded
+          cd python_embeded
+          echo "begin down pip.py"
+          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+          ./python.exe get-pip.py
+          echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
+          sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
+          echo "current path:"
+          pwd
+          echo "python embed files:"
+          ls -lh .
+          cd ..
+          echo "current path:"
+          pwd
+          ls -lh .
+
+
       # 需要缓存条件时，直接删除旧缓存
       - uses: prantlf/delete-cache-action@v2
         if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
