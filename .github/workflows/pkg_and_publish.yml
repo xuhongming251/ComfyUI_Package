@@ -265,7 +265,6 @@ jobs:
         run: |
             echo "current path:"
             pwd
-
             # 获取当前北京时间，格式化为年月日
             current_date=$(date +'%Y%m%d' -u -d "+8 hours")
             # 创建带有时间戳的压缩包
@@ -299,7 +298,8 @@ jobs:
           access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
       - name: Upload OSS
+        shell: bash
         run: |
           ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
-          ossutil cp $UPLOAD_FILE_NAME oss://mycomfyui/ComfyUI/
+          ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/""
 
