@@ -1,0 +1,54 @@
+name: Download From Git Url
+
+on:
+  workflow_dispatch:
+    inputs:
+      file-url:
+        description: 'Git URL'
+        required: true
+        default: ''
+      file-name:
+        description: 'file name'
+        required: false
+        default: ''
+
+jobs:
+  download-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: 解析文件名
+      run: |
+        # 使用 URL 解析出文件名（从 URL 中提取文件名）
+        FILENAME=$(basename "${{ github.event.inputs.file-url }}")
+        echo "从 URL 中解析出的文件名: $FILENAME"
+        # 如果没有提供自定义文件名，使用解析出的文件名
+        if [ -z "${{ github.event.inputs.file-name }}" ]; then
+          echo "没有提供自定义文件名，使用解析后的文件名。"
+          echo "UPLOAD_FILE_NAME=$FILENAME.zip" >> $GITHUB_ENV
+        else
+          echo "使用自定义文件名: ${{ github.event.inputs.file-name }}"
+          echo "UPLOAD_FILE_NAME=${{ github.event.inputs.file-name }}.zip" >> $GITHUB_ENV
+        fi
+
+    - name: Clone and ZIP
+      run: |
+        git clone --depth 1 "${{ github.event.inputs.file-url }}"
+        echo "已clone完成"
+        zip -r ${{ env.UPLOAD_FILE_NAME }} .
+        echo "压缩后"
+        ls 
+
+    - name: set ossutil
+      uses: yizhoumo/setup-ossutil@v2
+      with:
+        ossutil-version: '1.7.18'
+        endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+        access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+    - name: Upload OSS
+      run: |
+        echo "正在上传 $UPLOAD_FILE_NAME 到 OSS..."
+        ossutil cp $UPLOAD_FILE_NAME oss://xusharefile/download/$UPLOAD_FILE_NAME
