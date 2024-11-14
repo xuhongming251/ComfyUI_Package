@@ -185,46 +185,46 @@ jobs:
             pwd
             ls -lh ./ComfyUI_windows_portable
       
-      # - name: ZIP Pkg Files
-      #   shell: bash
-      #   run: |
-      #       echo "current path:"
-      #       pwd
-      #       # 获取当前北京时间，格式化为年月日
-      #       current_date=$(date +'%Y%m%d' -u -d "+8 hours")
-      #       # 创建带有时间戳的压缩包
-      #       "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_windows_portable_${current_date}.zip" ComfyUI_windows_portable
-      #       echo "UPLOAD_FILE_NAME=ComfyUI_windows_portable_${current_date}.zip" >> $GITHUB_ENV
-      #       echo "current path:"
-      #       pwd
-      #       ls -lh .
+      - name: ZIP Pkg Files
+        shell: bash
+        run: |
+            echo "current path:"
+            pwd
+            # 获取当前北京时间，格式化为年月日
+            current_date=$(date +'%Y%m%d' -u -d "+8 hours")
+            # 创建带有时间戳的压缩包
+            "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_windows_portable_${current_date}.zip" ComfyUI_windows_portable
+            echo "UPLOAD_FILE_NAME=ComfyUI_windows_portable_${current_date}.zip" >> $GITHUB_ENV
+            echo "current path:"
+            pwd
+            ls -lh .
 
-      # # 需要缓存条件时，直接删除旧缓存
-      # - name: Delete Old Cache File If Need Update Cache
-      #   uses: prantlf/delete-cache-action@v2
-      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
-      #   with:
-      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      # 需要缓存条件时，直接删除旧缓存
+      - name: Delete Old Cache File If Need Update Cache
+        uses: prantlf/delete-cache-action@v2
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
+        with:
+          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
-      # # 如果没有缓存或强制不使用缓存，则保存缓存
-      # - name: Save dependencies cache
-      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
-      #   uses: actions/cache/save@v4
-      #   with:
-      #     path: cu${{ inputs.cu }}_python_deps.tar
-      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      # 如果没有缓存或强制不使用缓存，则保存缓存
+      - name: Save dependencies cache
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: cu${{ inputs.cu }}_python_deps.tar
+          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
-      # - name: Prepare ossutil tool
-      #   uses: yizhoumo/setup-ossutil@v2
-      #   with:
-      #     ossutil-version: '1.7.18'
-      #     endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-      #     access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-      #     access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      - name: Prepare ossutil tool
+        uses: yizhoumo/setup-ossutil@v2
+        with:
+          ossutil-version: '1.7.18'
+          endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-      # - name: Upload OSS
-      #   shell: bash
-      #   run: |
-      #     ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
-      #     ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/"
+      - name: Upload OSS
+        shell: bash
+        run: |
+          ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
+          ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/"
 
