@@ -40,9 +40,14 @@ on:
 jobs:
   build_dependencies:
     runs-on: windows-latest
-    # # 设置GITHUB_TOKEN权限
-    # permissions: write-all
+
     steps:
+      
+      # clone 当前仓库
+      - name: Clone Current Repo
+        uses: actions/checkout@v4
+
+
       # 设置Python版本
       - uses: actions/setup-python@v5
         with:
@@ -147,8 +152,13 @@ jobs:
           echo "begin down pip.py"
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
           ./python.exe get-pip.py
+
           echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
           sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
+          
+          mv ./../ComfyUI_Package/install_comfyui_deps.py .
+          mv ./../ComfyUI_Package/install_custom_deps.py .
+
           echo "current path:"
           pwd
           echo "python embed files:"
@@ -158,92 +168,6 @@ jobs:
           pwd
           ls -lh .
 
-      # 生成可离线安装依赖的脚本
-      - name: "Gen '1、Offline Install ComfyUI Dependencies.bat' file"
-        shell: bash
-        run: |
-            echo "@echo off
-            setlocal enabledelayedexpansion
-
-            cd /d %~dp0
-
-            set DEPS_DIR=comfyui_deps\\
-
-            set PYTHON_EXE=python_embeded\python.exe
-
-            if not exist "%DEPS_DIR%" (
-                echo Directory %DEPS_DIR% does not exist.
-                pause
-                exit /b 1
-            )
-
-            for %%f in ("%DEPS_DIR%\*.whl") do (
-                set FILE=%%f
-                echo Installing !FILE!
-                "%PYTHON_EXE%" -s -m pip install --no-index --find-links="%DEPS_DIR%" "!FILE!"
-                if errorlevel 1 (
-                    echo Failed to install !FILE!
-                    pause
-                    exit /b 1
-                )
-            )
-
-            pause" > "1、Offline Install ComfyUI Dependencies.bat"
-
-            echo "current path:"
-            pwd
-            ls -lh .
-
-            echo "'1、Offline Install ComfyUI Dependencies.bat' file Content:"
-            cat "1、Offline Install ComfyUI Dependencies.bat"
-
-      - name: "Copy run_nvidia_gpu.bat, Gen '2、Start ComfyUI.bat' file"
-        shell: bash
-        run: |
-          echo "current path:"
-          pwd
-          cp -r ComfyUI/.ci/windows_base_files/run_nvidia_gpu.bat ./"2、Start ComfyUI.bat"
-          ls -lh .
-          echo "'2、Start ComfyUI.bat' file Content:"
-          cat "2、Start ComfyUI.bat"
-
-      # 生成进入Python环境的脚本
-      - name: "Gen 'Enter Current Python Env.bat' file"
-        shell: bash
-        run: |
-            echo "@echo off
-            setlocal enabledelayedexpansion
-
-            cd /d %~dp0
-
-            :: 设置Python解释器路径
-            set PYTHON_EXE=python_embeded\python.exe
-
-            :: 检查Python解释器是否存在
-            if not exist "%PYTHON_EXE%" (
-                echo Python executable not found at %PYTHON_EXE%
-                pause
-                exit /b 1
-            )
-
-            :: 启动Python环境，并保持命令行窗口打开以便用户可以运行pip install命令
-            echo Starting Python environment...
-            cmd /k "%PYTHON_EXE%" -m pip" > "Enter Current Python Env.bat"
-
-            echo "current path:"
-            pwd
-            ls -lh .
-
-            echo "'Enter Current Python Env.bat' file content:"
-            cat "Enter Current Python Env.bat"
-# -rw-r--r-- 1 runneradmin 197121  487 Nov 13 14:53 1、Offline Install ComfyUI Dependencies.bat
-# -rw-r--r-- 1 runneradmin 197121   82 Nov 13 14:53 2、Start ComfyUI.bat
-# drwxr-xr-x 1 runneradmin 197121    0 Nov 13 14:53 ComfyUI
-# -rw-r--r-- 1 runneradmin 197121  433 Nov 13 14:53 Enter Current Python Env.bat
-# drwxr-xr-x 1 runneradmin 197121    0 Nov 13 02:58 comfyui_deps
-# -rw-r--r-- 1 runneradmin 197121 2.5G Nov 13 02:59 cu124_python_deps.tar
-# drwxr-xr-x 1 runneradmin 197121    0 Nov 13 14:53 python_embeded
-# -rw-r--r-- 1 runneradmin 197121  11M Nov 13 14:53 python_embeded.zip
       - name: Prepare Pkg Files
         shell: bash
         run: |
@@ -251,55 +175,56 @@ jobs:
             mv python_embeded ComfyUI_windows_portable
             mv ComfyUI ComfyUI_windows_portable
             mv comfyui_deps ComfyUI_windows_portable
-            mv "1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
-            mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
-            mv "Enter Current Python Env.bat" ComfyUI_windows_portable
+            mv ComfyUI_Package/"1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
+            mv ComfyUI_Package/"2、Start ComfyUI.bat" ComfyUI_windows_portable
+            mv ComfyUI_Package/"3、Install Custom Dependencies.bat" ComfyUI_windows_portable
             echo "current path:"
             pwd
             ls -lh .
             echo "ComfyUI_windows_portable files:"
             pwd
             ls -lh ./ComfyUI_windows_portable
-      - name: ZIP Pkg Files
-        shell: bash
-        run: |
-            echo "current path:"
-            pwd
-            # 获取当前北京时间，格式化为年月日
-            current_date=$(date +'%Y%m%d' -u -d "+8 hours")
-            # 创建带有时间戳的压缩包
-            "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_windows_portable_${current_date}.zip" ComfyUI_windows_portable
-            echo "UPLOAD_FILE_NAME=ComfyUI_windows_portable_${current_date}.zip" >> $GITHUB_ENV
-            echo "current path:"
-            pwd
-            ls -lh .
+      
+      # - name: ZIP Pkg Files
+      #   shell: bash
+      #   run: |
+      #       echo "current path:"
+      #       pwd
+      #       # 获取当前北京时间，格式化为年月日
+      #       current_date=$(date +'%Y%m%d' -u -d "+8 hours")
+      #       # 创建带有时间戳的压缩包
+      #       "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_windows_portable_${current_date}.zip" ComfyUI_windows_portable
+      #       echo "UPLOAD_FILE_NAME=ComfyUI_windows_portable_${current_date}.zip" >> $GITHUB_ENV
+      #       echo "current path:"
+      #       pwd
+      #       ls -lh .
 
-      # 需要缓存条件时，直接删除旧缓存
-      - name: Delete Old Cache File If Need Update Cache
-        uses: prantlf/delete-cache-action@v2
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
-        with:
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      # # 需要缓存条件时，直接删除旧缓存
+      # - name: Delete Old Cache File If Need Update Cache
+      #   uses: prantlf/delete-cache-action@v2
+      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
+      #   with:
+      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
-      # 如果没有缓存或强制不使用缓存，则保存缓存
-      - name: Save dependencies cache
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
-        uses: actions/cache/save@v4
-        with:
-          path: cu${{ inputs.cu }}_python_deps.tar
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      # # 如果没有缓存或强制不使用缓存，则保存缓存
+      # - name: Save dependencies cache
+      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: cu${{ inputs.cu }}_python_deps.tar
+      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
-      - name: Prepare ossutil tool
-        uses: yizhoumo/setup-ossutil@v2
-        with:
-          ossutil-version: '1.7.18'
-          endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      # - name: Prepare ossutil tool
+      #   uses: yizhoumo/setup-ossutil@v2
+      #   with:
+      #     ossutil-version: '1.7.18'
+      #     endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      #     access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      #     access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-      - name: Upload OSS
-        shell: bash
-        run: |
-          ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
-          ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/"
+      # - name: Upload OSS
+      #   shell: bash
+      #   run: |
+      #     ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
+      #     ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/"
 
