@@ -175,9 +175,9 @@ jobs:
             mv python_embeded ComfyUI_windows_portable
             mv ComfyUI ComfyUI_windows_portable
             mv comfyui_deps ComfyUI_windows_portable
-            mv ComfyUI_Package/"1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
-            mv ComfyUI_Package/"2、Start ComfyUI.bat" ComfyUI_windows_portable
-            mv ComfyUI_Package/"3、Install Custom Dependencies.bat" ComfyUI_windows_portable
+            mv "1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
+            mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
+            mv "3、Install Custom Dependencies.bat" ComfyUI_windows_portable
             echo "current path:"
             pwd
             ls -lh .
