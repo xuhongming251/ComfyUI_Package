@@ -156,8 +156,8 @@ jobs:
           echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
           sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
           
-          mv ./../ComfyUI_Package/install_comfyui_deps.py .
-          mv ./../ComfyUI_Package/install_custom_deps.py .
+          mv ./../install_comfyui_deps.py .
+          mv ./../install_custom_deps.py .
 
           echo "current path:"
           pwd
