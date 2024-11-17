@@ -115,7 +115,7 @@ jobs:
 
       # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
       - name: Download python .whl dependence files for comfyui
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' || inputs.force_update_deps == 'true' }}
+        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' }}
         shell: bash
         run: |
           echo "restore_cache step result:"
