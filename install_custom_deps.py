@@ -76,30 +76,28 @@ def main_menu():
             if package_input.lower() == 'exit':
                 continue
             
-            use_mirror = input(Fore.GREEN + "Would you like to use a domestic mirror for installation? (y/n): ").lower()
-            if use_mirror == 'n':
-                install_package(package_input)
-            elif use_mirror == 'y':
-                print_message("Please choose a mirror:")
-                print(Fore.CYAN + "1. USTC (University of Science and Technology of China)")
-                print(Fore.CYAN + "2. TUNA (Tsinghua University)")
-                print(Fore.CYAN + "3. Aliyun (Alibaba Cloud)")
-                print(Fore.CYAN + "4. Back")
-                
-                while True:
-                    mirror_choice = input(Fore.GREEN + "Enter the number of your choice (1/2/3/4): ").strip()
-                    if mirror_choice == "4":
-                        break
-                    if mirror_choice in ["1", "2", "3"]:
-                        mirror_urls = {
-                            "1": "https://pypi.mirrors.ustc.edu.cn/simple/",
-                            "2": "https://pypi.tuna.tsinghua.edu.cn/simple/",
-                            "3": "https://mirrors.aliyun.com/pypi/simple/"
-                        }
-                        install_package(package_input, mirror_urls[mirror_choice])
-                        break
-                    else:
-                        print_error("Invalid choice, please try again.")
+            print_message("Please choose a source:")
+            print(Fore.CYAN + "1. Official PyPI")
+            print(Fore.CYAN + "2. USTC (University of Science and Technology of China)")
+            print(Fore.CYAN + "3. TUNA (Tsinghua University)")
+            print(Fore.CYAN + "4. Aliyun (Alibaba Cloud)")
+            
+            while True:
+                source_choice = input(Fore.GREEN + "Enter the number of your choice (1/2/3/4): ").strip()
+                if source_choice == "1":
+                    install_package(package_input)  # Official PyPI
+                    break
+                elif source_choice == "2":
+                    install_package(package_input, "https://pypi.mirrors.ustc.edu.cn/simple/")
+                    break
+                elif source_choice == "3":
+                    install_package(package_input, "https://pypi.tuna.tsinghua.edu.cn/simple/")
+                    break
+                elif source_choice == "4":
+                    install_package(package_input, "https://mirrors.aliyun.com/pypi/simple/")
+                    break
+                else:
+                    print_error("Invalid choice, please try again.")
         
         elif choice == '2':
             package_name = input(Fore.GREEN + "Enter the name of the package to check: ").strip()
