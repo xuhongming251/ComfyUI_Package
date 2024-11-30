@@ -1,0 +1,18 @@
+
+
+.\python_embeded\python.exe -m pip install 
+
+.\python_embeded\python.exe -m pip install --upgrade 
+
+.\python_embeded\python.exe -m pip uninstall 
+
+.\python_embeded\python.exe -m pip install -r requirements.txt
+
+.\python_embeded\python.exe -m pip uninstall -r requirements.txt
+
+.\python_embeded\python.exe -m pip freeze > requirements.txt
+
+
+.\python_embeded\python.exe -m pip install requests
+.\python_embeded\python.exe -m pip install --upgrade requests
+.\python_embeded\python.exe -m pip uninstall requests
