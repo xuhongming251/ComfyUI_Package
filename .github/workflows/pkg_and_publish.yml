@@ -218,17 +218,36 @@ jobs:
           path: cu${{ inputs.cu }}_python_deps.tar
           key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
-      - name: Prepare ossutil tool
-        uses: yizhoumo/setup-ossutil@v2
-        with:
-          ossutil-version: '1.7.18'
-          endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-          access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-          access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      # - name: Prepare ossutil tool
+      #   uses: yizhoumo/setup-ossutil@v2
+      #   with:
+      #     ossutil-version: '1.7.18'
+      #     endpoint: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      #     access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      #     access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
 
-      - name: Upload OSS
+      # - name: Upload OSS
+      #   shell: bash
+      #   run: |
+      #     ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
+      #     ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/"
+
+
+      - name: Install Hugging Face Hub
         shell: bash
         run: |
-          ossutil rm "oss://mycomfyui/ComfyUI/$UPLOAD_FILE_NAME"
-          ossutil cp "$UPLOAD_FILE_NAME" "oss://mycomfyui/ComfyUI/"
+          python -m pip install --upgrade pip
+          pip install huggingface_hub  # 安装 huggingface_hub 库
 
+      - name: Log in to Hugging Face
+        shell: bash
+        run: |
+          echo "${{ secrets.HF_TOKEN }}" | huggingface-cli login --token
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+      - name: Upload file to Hugging Face
+        shell: bash
+        run: |
+          huggingface-cli repo create ComfyUI_PKG --private  # 创建一个新仓库（如果需要）
+          huggingface-cli upload "$UPLOAD_FILE_NAME" --repo xuminglong/ComfyUI_PKG  # 上传文件
