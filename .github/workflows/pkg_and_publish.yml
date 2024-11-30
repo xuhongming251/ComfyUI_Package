@@ -247,5 +247,5 @@ jobs:
       - name: Upload file to Hugging Face
         shell: bash
         run: |
-          huggingface-cli repo create ComfyUI_PKG --private  # 创建一个新仓库（如果需要）
+          huggingface-cli repo create ComfyUI_PKG  # 创建一个新仓库（如果需要）
           huggingface-cli upload "$UPLOAD_FILE_NAME" --repo xuminglong/ComfyUI_PKG  # 上传文件
