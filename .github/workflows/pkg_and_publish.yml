@@ -197,7 +197,7 @@ jobs:
             # 获取当前北京时间，格式化为年月日
             current_date=$(date +'%Y%m%d' -u -d "+8 hours")
             # 创建带有时间戳的压缩包
-            "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_windows_portable_${current_date}_cu${{ inputs.cu }}.zip" ComfyUI_windows_portable
+            "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_ENV_${current_date}_Python3.${{ inputs.python_minor }}.${{ inputs.python_patch }}_cu${{ inputs.cu }}.zip" ComfyUI_windows_portable
             echo "UPLOAD_FILE_NAME=ComfyUI_ENV_${current_date}_Python3.${{ inputs.python_minor }}.${{ inputs.python_patch }}_cu${{ inputs.cu }}.zip" >> $GITHUB_ENV
             echo "current path:"
             pwd
