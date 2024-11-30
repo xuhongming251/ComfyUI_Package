@@ -161,6 +161,7 @@ jobs:
           
           mv ./../install_comfyui_deps.py .
           mv ./../install_custom_deps.py .
+          mv ./../disable_nodes.py .
 
           echo "current path:"
           pwd
@@ -181,7 +182,6 @@ jobs:
             mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
             mv "3、Install Custom Dependencies.bat" ComfyUI_windows_portable
             mv "cmd_demo.txt" ComfyUI_windows_portable
-            mv "disable_nodes.py" ComfyUI_windows_portable
             echo "current path:"
             pwd
             ls -lh .
