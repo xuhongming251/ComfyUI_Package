@@ -23,13 +23,13 @@ on:
         description: 'python minor version'
         required: true
         type: string
-        default: "12"
+        default: "10"
 
       python_patch:
         description: 'python patch version'
         required: true
         type: string
-        default: "7"
+        default: "11"
       
       force_update_deps:
         description: 'Force update deps (true/false)'
