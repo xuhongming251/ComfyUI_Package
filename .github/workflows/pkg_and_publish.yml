@@ -31,11 +31,11 @@ on:
         type: string
         default: "11"
       
-      force_update_deps:
-        description: 'Force update deps (true/false)'
-        required: false
-        type: string
-        default: 'false'
+      # force_update_deps:
+      #   description: 'Force update deps (true/false)'
+      #   required: false
+      #   type: string
+      #   default: 'false'
 
 jobs:
   build_dependencies:
@@ -54,12 +54,12 @@ jobs:
           python-version: 3.${{ inputs.python_minor }}.${{ inputs.python_patch }}
 
       # 打印输入消息
-      - name: Print Input Vars
-        shell: bash
-        run: |
-          echo 'Input variable list:'
-          echo "force_update_deps:"
-          echo ${{ inputs.force_update_deps }}
+      # - name: Print Input Vars
+      #   shell: bash
+      #   run: |
+      #     echo 'Input variable list:'
+      #     echo "force_update_deps:"
+      #     echo ${{ inputs.force_update_deps }}
 
       - name: Dynamic Gen Start ComfyUI Script
         shell: bash
@@ -104,27 +104,27 @@ jobs:
           pause' > "2、Start ComfyUI.bat"
 
       # 尝试恢复缓存
-      - name: Restore dependencies cache
-        id: restore_cache
-        if: ${{ inputs.force_update_deps != 'true' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: cu${{ inputs.cu }}_python_deps.tar
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
-          restore-keys: |
-            ${{ runner.os }}-build-cu${{ inputs.cu }}-
+      # - name: Restore dependencies cache
+      #   id: restore_cache
+      #   if: ${{ inputs.force_update_deps != 'true' }}
+      #   uses: actions/cache/restore@v4
+      #   with:
+      #     path: cu${{ inputs.cu }}_python_deps.tar
+      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-cu${{ inputs.cu }}-
 
-      - name: Print restore_cache Result
-        shell: bash
-        run: |
-          echo "steps.restore_cache.outputs.cache-hit:"
-          echo ${{ steps.restore_cache.outputs.cache-hit}}
+      # - name: Print restore_cache Result
+      #   shell: bash
+      #   run: |
+      #     echo "steps.restore_cache.outputs.cache-hit:"
+      #     echo ${{ steps.restore_cache.outputs.cache-hit}}
 
       # 没有缓存则打印个日志
-      - name: IF No dependencies
-        if: steps.restore_cache.outputs.cache-hit != 'true'
-        run: |
-          echo "No cache hit, skipping extraction."
+      # - name: IF No dependencies
+      #   if: steps.restore_cache.outputs.cache-hit != 'true'
+      #   run: |
+      #     echo "No cache hit, skipping extraction."
 
       # 拉取ComfyUI代码
       - name: Clone ComfyUI From Git
@@ -138,32 +138,32 @@ jobs:
           ls -lah .
       
       # 如果恢复有依赖文件，并且不强制更新缓存，则解压原来的缓存
-      - name: If Exist Chche Dependencies, Extract dependencies
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_update_deps != 'true' }}
-        shell: bash
-        run: |
-          echo "current path:"
-          pwd
-          echo 'begin extract deps'
-          ls -lah .
-          tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
-          echo 'after extract deps'
-          ls -lah .
-          mv cu${{ inputs.cu }}_python_deps comfyui_deps
-          echo 'after rename deps dir'
-          ls -lah .
-          echo 'comfyui_deps files list'
-          ls -lah ./comfyui_deps
+      # - name: If Exist Chche Dependencies, Extract dependencies
+      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_update_deps != 'true' }}
+      #   shell: bash
+      #   run: |
+      #     echo "current path:"
+      #     pwd
+      #     echo 'begin extract deps'
+      #     ls -lah .
+      #     tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
+      #     echo 'after extract deps'
+      #     ls -lah .
+      #     mv cu${{ inputs.cu }}_python_deps comfyui_deps
+      #     echo 'after rename deps dir'
+      #     ls -lah .
+      #     echo 'comfyui_deps files list'
+      #     ls -lah ./comfyui_deps
 
       # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
       - name: Download python .whl dependence files for comfyui
-        if: steps.restore_cache.outputs.cache-hit != 'false'
+        # if: steps.restore_cache.outputs.cache-hit != 'false'
         shell: bash
         run: |
-          echo "restore_cache step result:"
-          echo ${{ steps.restore_cache.outputs.cache-hit}}
-          echo "force_update_deps flag:"
-          echo ${{ inputs.force_update_deps }}
+          # echo "restore_cache step result:"
+          # echo ${{ steps.restore_cache.outputs.cache-hit}}
+          # echo "force_update_deps flag:"
+          # echo ${{ inputs.force_update_deps }}
 
           echo "current path:"
           pwd
@@ -257,19 +257,19 @@ jobs:
             ls -lh .
 
       # 需要缓存条件时，直接删除旧缓存
-      - name: Delete Old Cache File If Need Update Cache
-        uses: prantlf/delete-cache-action@v2
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
-        with:
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      # - name: Delete Old Cache File If Need Update Cache
+      #   uses: prantlf/delete-cache-action@v2
+      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
+      #   with:
+      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
       # 如果没有缓存或强制不使用缓存，则保存缓存
-      - name: Save dependencies cache
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
-        uses: actions/cache/save@v4
-        with:
-          path: cu${{ inputs.cu }}_python_deps.tar
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      # - name: Save dependencies cache
+      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'false' ||  inputs.force_update_deps == 'true' }}
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: cu${{ inputs.cu }}_python_deps.tar
+      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
 
       # - name: Prepare ossutil tool
       #   uses: yizhoumo/setup-ossutil@v2
