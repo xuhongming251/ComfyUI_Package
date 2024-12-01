@@ -61,7 +61,6 @@ jobs:
           echo "force_update_deps:"
           echo ${{ inputs.force_update_deps }}
 
-      # 动态根据python版本生成启动ComfyUI脚本
       - name: Dynamic Gen Start ComfyUI Script
         shell: bash
         run: |
