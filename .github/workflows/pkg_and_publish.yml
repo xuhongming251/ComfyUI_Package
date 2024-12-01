@@ -175,7 +175,9 @@ jobs:
           ls -lah ./cu${{ inputs.cu }}_python_deps
 
           echo "begin down ComfyUI-Manager requirements.txt"
-          curl https://raw.githubusercontent.com/ltdrdata/ComfyUI-Manager/refs/heads/main/requirements.txt
+          curl https://raw.githubusercontent.com/ltdrdata/ComfyUI-Manager/refs/heads/main/requirements.txt > requirements.txt
+          echo "downloaded ComfyUI-Manager requirements.txt"
+          ls -lah .
           python -m pip wheel --no-cache-dir -r requirements.txt -w ./cu${{ inputs.cu }}_python_deps
 
           echo "ComfyUI-Manager whl deps have downloaded, all the whl files:"
