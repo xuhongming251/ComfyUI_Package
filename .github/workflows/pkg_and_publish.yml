@@ -61,126 +61,171 @@ jobs:
           echo "force_update_deps:"
           echo ${{ inputs.force_update_deps }}
 
-      # 尝试恢复缓存
-      - name: Restore dependencies cache
-        id: restore_cache
-        if: ${{ inputs.force_update_deps != 'true' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: cu${{ inputs.cu }}_python_deps.tar
-          key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
-          restore-keys: |
-            ${{ runner.os }}-build-cu${{ inputs.cu }}-
+      # 动态根据python版本生成启动ComfyUI脚本
+      - name: Dynamic Gen Start ComfyUI Script
+        - shell: bash
+          run: |
+            echo "@echo off
+            setlocal
 
-      - name: Print restore_cache Result
-        shell: bash
-        run: |
-          echo "steps.restore_cache.outputs.cache-hit:"
-          echo ${{ steps.restore_cache.outputs.cache-hit}}
+            :: Set ComfyUI root directory path (without the main.py part)
+            set comfyui_root_path=D:\ComfyUI
 
-      # 没有缓存则打印个日志
-      - name: IF No dependencies
-        if: steps.restore_cache.outputs.cache-hit != 'true'
-        run: |
-          echo "No cache hit, skipping extraction."
+            :: Build the full path to main.py and custom_nodes directory
+            set main_script_path=%comfyui_root_path%\main.py
+            set custom_nodes_dir=%comfyui_root_path%\custom_nodes
 
-      # 拉取ComfyUI代码
-      - name: Clone ComfyUI From Git
-        shell: bash
-        run: |
-          echo "current path:"
-          pwd
-          git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
-          cd ComfyUI
-          echo "Newest ComfyUI files:"
-          ls -lah .
+            :: Output paths for confirmation
+            echo Main script path: %main_script_path%
+            echo Custom nodes directory: %custom_nodes_dir%
+
+            :: Modify the first line of python3xx._pth to set it to comfyui_root_path
+            (
+                setlocal enabledelayedexpansion
+                set first_line=%comfyui_root_path%
+                set first_line_done=false
+                for /f "delims=" %%A in (.\python_embeded\python3${{ inputs.python_minor }}._pth) do (
+                    if not !first_line_done! == true (
+                        echo !first_line!
+                        set first_line_done=true
+                    ) else (
+                        echo %%A
+                    )
+                )
+            ) > .\python_embeded\python3${{ inputs.python_minor }}._pth.tmp
+            move /y .\python_embeded\python3${{ inputs.python_minor }}._pth.tmp .\python_embeded\python3${{ inputs.python_minor }}._pth
+
+
+            :: Run the disable_nodes.py script with the custom nodes directory
+            .\python_embeded\python.exe .\python_embeded\disable_nodes.py --config .\enable_nodes.json --disable-config .\disable_nodes.json --custom-nodes-dir %custom_nodes_dir%
+
+            :: Run the main.py script
+            .\python_embeded\python.exe -s %main_script_path% --disable-metadata --windows-standalone-build
+
+            :: Pause to keep the command prompt open
+            pause" > "2、Start ComfyUI.bat"
+
+
+      # # 尝试恢复缓存
+      # - name: Restore dependencies cache
+      #   id: restore_cache
+      #   if: ${{ inputs.force_update_deps != 'true' }}
+      #   uses: actions/cache/restore@v4
+      #   with:
+      #     path: cu${{ inputs.cu }}_python_deps.tar
+      #     key: ${{ runner.os }}-build-cu${{ inputs.cu }}-${{ inputs.python_minor }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-cu${{ inputs.cu }}-
+
+      # - name: Print restore_cache Result
+      #   shell: bash
+      #   run: |
+      #     echo "steps.restore_cache.outputs.cache-hit:"
+      #     echo ${{ steps.restore_cache.outputs.cache-hit}}
+
+      # # 没有缓存则打印个日志
+      # - name: IF No dependencies
+      #   if: steps.restore_cache.outputs.cache-hit != 'true'
+      #   run: |
+      #     echo "No cache hit, skipping extraction."
+
+      # # 拉取ComfyUI代码
+      # - name: Clone ComfyUI From Git
+      #   shell: bash
+      #   run: |
+      #     echo "current path:"
+      #     pwd
+      #     git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
+      #     cd ComfyUI
+      #     echo "Newest ComfyUI files:"
+      #     ls -lah .
       
-      # 如果恢复有依赖文件，并且不强制更新缓存，则解压原来的缓存
-      - name: If Exist Chche Dependencies, Extract dependencies
-        if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_update_deps != 'true' }}
-        shell: bash
-        run: |
-          echo "current path:"
-          pwd
-          echo 'begin extract deps'
-          ls -lah .
-          tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
-          echo 'after extract deps'
-          ls -lah .
-          mv cu${{ inputs.cu }}_python_deps comfyui_deps
-          echo 'after rename deps dir'
-          ls -lah .
-          echo 'comfyui_deps files list'
-          ls -lah ./comfyui_deps
+      # # 如果恢复有依赖文件，并且不强制更新缓存，则解压原来的缓存
+      # - name: If Exist Chche Dependencies, Extract dependencies
+      #   if: ${{ steps.restore_cache.outputs.cache-hit == 'true' && inputs.force_update_deps != 'true' }}
+      #   shell: bash
+      #   run: |
+      #     echo "current path:"
+      #     pwd
+      #     echo 'begin extract deps'
+      #     ls -lah .
+      #     tar -xvf cu${{ inputs.cu }}_python_deps.tar -C .
+      #     echo 'after extract deps'
+      #     ls -lah .
+      #     mv cu${{ inputs.cu }}_python_deps comfyui_deps
+      #     echo 'after rename deps dir'
+      #     ls -lah .
+      #     echo 'comfyui_deps files list'
+      #     ls -lah ./comfyui_deps
 
-      # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
-      - name: Download python .whl dependence files for comfyui
-        if: steps.restore_cache.outputs.cache-hit != 'false'
-        shell: bash
-        run: |
-          echo "restore_cache step result:"
-          echo ${{ steps.restore_cache.outputs.cache-hit}}
-          echo "force_update_deps flag:"
-          echo ${{ inputs.force_update_deps }}
+      # # 如果没有缓存或者强制更新缓存，则重新执行依赖安装
+      # - name: Download python .whl dependence files for comfyui
+      #   if: steps.restore_cache.outputs.cache-hit != 'false'
+      #   shell: bash
+      #   run: |
+      #     echo "restore_cache step result:"
+      #     echo ${{ steps.restore_cache.outputs.cache-hit}}
+      #     echo "force_update_deps flag:"
+      #     echo ${{ inputs.force_update_deps }}
 
-          echo "current path:"
-          pwd
-          echo "down whl cmd:"
-          echo "python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r ./ComfyUI/requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps"
-          echo "begin exec down cmd.."
-          python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r ./ComfyUI/requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps
-          echo "ComfyUI whl deps have downloaded, the whl files:"
-          ls -lah ./cu${{ inputs.cu }}_python_deps
-          tar cf cu${{ inputs.cu }}_python_deps.tar cu${{ inputs.cu }}_python_deps
-          echo "deps tar file info:"
-          ls -lh cu${{ inputs.cu }}_python_deps.tar
-          mv cu${{ inputs.cu }}_python_deps comfyui_deps
-          echo "current path:"
-          pwd
-          ls -lah .
+      #     echo "current path:"
+      #     pwd
+      #     echo "down whl cmd:"
+      #     echo "python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r ./ComfyUI/requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps"
+      #     echo "begin exec down cmd.."
+      #     python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r ./ComfyUI/requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps
+      #     echo "ComfyUI whl deps have downloaded, the whl files:"
+      #     ls -lah ./cu${{ inputs.cu }}_python_deps
+      #     tar cf cu${{ inputs.cu }}_python_deps.tar cu${{ inputs.cu }}_python_deps
+      #     echo "deps tar file info:"
+      #     ls -lh cu${{ inputs.cu }}_python_deps.tar
+      #     mv cu${{ inputs.cu }}_python_deps comfyui_deps
+      #     echo "current path:"
+      #     pwd
+      #     ls -lah .
 
-      # 下载Python 二进制文件，并修改引入相对ComfyUI的目录
-      - name: Download Python Bin For embed
-        shell: bash
-        run: |
-          echo "current path:"
-          pwd
-          ls -lh .
-          curl https://www.python.org/ftp/python/3.${{ inputs.python_minor }}.${{ inputs.python_patch }}/python-3.${{ inputs.python_minor }}.${{ inputs.python_patch }}-embed-amd64.zip -o python_embeded.zip
-          unzip python_embeded.zip -d python_embeded
-          cd python_embeded
-          echo "begin down pip.py"
-          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-          ./python.exe get-pip.py
+      # # 下载Python 二进制文件，并修改引入相对ComfyUI的目录
+      # - name: Download Python Bin For embed
+      #   shell: bash
+      #   run: |
+      #     echo "current path:"
+      #     pwd
+      #     ls -lh .
+      #     curl https://www.python.org/ftp/python/3.${{ inputs.python_minor }}.${{ inputs.python_patch }}/python-3.${{ inputs.python_minor }}.${{ inputs.python_patch }}-embed-amd64.zip -o python_embeded.zip
+      #     unzip python_embeded.zip -d python_embeded
+      #     cd python_embeded
+      #     echo "begin down pip.py"
+      #     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+      #     ./python.exe get-pip.py
 
-          echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
-          sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
+      #     echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
+      #     sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
 
-          ./python.exe -m pip install setuptools
-          ./python.exe -m pip install colorama 
+      #     ./python.exe -m pip install setuptools
+      #     ./python.exe -m pip install colorama 
           
-          mv ./../install_comfyui_deps.py .
-          mv ./../install_custom_deps.py .
-          mv ./../disable_nodes.py .
+      #     mv ./../install_comfyui_deps.py .
+      #     mv ./../install_custom_deps.py .
+      #     mv ./../disable_nodes.py .
 
-          echo "current path:"
-          pwd
-          echo "python embed files:"
-          ls -lh .
-          cd ..
-          echo "current path:"
-          pwd
-          ls -lh .
+      #     echo "current path:"
+      #     pwd
+      #     echo "python embed files:"
+      #     ls -lh .
+      #     cd ..
+      #     echo "current path:"
+      #     pwd
+      #     ls -lh .
 
       - name: Prepare Pkg Files
         shell: bash
         run: |
             mkdir ComfyUI_windows_portable
-            mv python_embeded ComfyUI_windows_portable
-            mv comfyui_deps ComfyUI_windows_portable
-            mv "1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
+            # mv python_embeded ComfyUI_windows_portable
+            # mv comfyui_deps ComfyUI_windows_portable
+            # mv "1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
             mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
-            mv "3、Install Custom Dependencies.bat" ComfyUI_windows_portable
+            # mv "3、Install Custom Dependencies.bat" ComfyUI_windows_portable
             mv "cmd_demo.txt" ComfyUI_windows_portable
             echo "current path:"
             pwd
