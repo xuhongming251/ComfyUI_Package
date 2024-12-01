@@ -64,7 +64,7 @@ jobs:
       - name: Dynamic Gen Start ComfyUI Script
         shell: bash
         run: |
-          echo "@echo off
+          echo '@echo off
           setlocal
 
           :: Set ComfyUI root directory path (without the main.py part)
@@ -96,13 +96,13 @@ jobs:
 
 
           :: Run the disable_nodes.py script with the custom nodes directory
-          .\python_embeded\python.exe .\python_embeded\disable_nodes.py --config .\enable_nodes.json --disable-config .\disable_nodes.json --custom-nodes-dir %custom_nodes_dir%
+          .\python_embeded\python.exe .\python_embeded\disable_nodes.py --config ".\enable_nodes.json" --disable-config ".\disable_nodes.json" --custom-nodes-dir "%custom_nodes_dir%"
 
           :: Run the main.py script
-          .\python_embeded\python.exe -s %main_script_path% --disable-metadata --windows-standalone-build
+          .\python_embeded\python.exe -s "%main_script_path%" --disable-metadata --windows-standalone-build
 
           :: Pause to keep the command prompt open
-          pause" > "2、Start ComfyUI.bat"
+          pause' > "2、Start ComfyUI.bat"
 
 
       # # 尝试恢复缓存
@@ -183,44 +183,44 @@ jobs:
       #     pwd
       #     ls -lah .
 
-      # # 下载Python 二进制文件，并修改引入相对ComfyUI的目录
-      # - name: Download Python Bin For embed
-      #   shell: bash
-      #   run: |
-      #     echo "current path:"
-      #     pwd
-      #     ls -lh .
-      #     curl https://www.python.org/ftp/python/3.${{ inputs.python_minor }}.${{ inputs.python_patch }}/python-3.${{ inputs.python_minor }}.${{ inputs.python_patch }}-embed-amd64.zip -o python_embeded.zip
-      #     unzip python_embeded.zip -d python_embeded
-      #     cd python_embeded
-      #     echo "begin down pip.py"
-      #     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-      #     ./python.exe get-pip.py
+      # 下载Python 二进制文件，并修改引入相对ComfyUI的目录
+      - name: Download Python Bin For embed
+        shell: bash
+        run: |
+          echo "current path:"
+          pwd
+          ls -lh .
+          curl https://www.python.org/ftp/python/3.${{ inputs.python_minor }}.${{ inputs.python_patch }}/python-3.${{ inputs.python_minor }}.${{ inputs.python_patch }}-embed-amd64.zip -o python_embeded.zip
+          unzip python_embeded.zip -d python_embeded
+          cd python_embeded
+          echo "begin down pip.py"
+          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+          ./python.exe get-pip.py
 
-      #     echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
-      #     sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
+          echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
+          sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
 
-      #     ./python.exe -m pip install setuptools
-      #     ./python.exe -m pip install colorama 
+          ./python.exe -m pip install setuptools
+          ./python.exe -m pip install colorama 
           
-      #     mv ./../install_comfyui_deps.py .
-      #     mv ./../install_custom_deps.py .
-      #     mv ./../disable_nodes.py .
+          mv ./../install_comfyui_deps.py .
+          mv ./../install_custom_deps.py .
+          mv ./../disable_nodes.py .
 
-      #     echo "current path:"
-      #     pwd
-      #     echo "python embed files:"
-      #     ls -lh .
-      #     cd ..
-      #     echo "current path:"
-      #     pwd
-      #     ls -lh .
+          echo "current path:"
+          pwd
+          echo "python embed files:"
+          ls -lh .
+          cd ..
+          echo "current path:"
+          pwd
+          ls -lh .
 
       - name: Prepare Pkg Files
         shell: bash
         run: |
             mkdir ComfyUI_windows_portable
-            # mv python_embeded ComfyUI_windows_portable
+            mv python_embeded ComfyUI_windows_portable
             # mv comfyui_deps ComfyUI_windows_portable
             # mv "1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
             mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
