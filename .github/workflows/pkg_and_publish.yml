@@ -244,24 +244,24 @@ jobs:
         run: |
           huggingface-cli login --token ${{ secrets.HF_TOKEN }}
 
-      - name: Create Hugging Face repo using Python API
-        run: |
-          python -c "
-import os
-from huggingface_hub import HfApi
-from huggingface_hub.utils import RepositoryNotFoundError
+#       - name: Create Hugging Face repo using Python API
+#         run: |
+#           python -c "
+# import os
+# from huggingface_hub import HfApi
+# from huggingface_hub.utils import RepositoryNotFoundError
 
-repo_name = 'xuminglong/ComfyUI_PKG'
-api = HfApi()
+# repo_name = 'xuminglong/ComfyUI_PKG'
+# api = HfApi()
 
-try:
-    # 检查仓库是否已存在
-    api.repo_info(repo_name)
-    print(f'Repo {repo_name} already exists. Skipping creation.')
-except RepositoryNotFoundError:
-    # 仓库不存在时创建仓库
-    print(f'Repo {repo_name} does not exist. Creating it now.')
-    api.create_repo(repo_name, private=True)"
+# try:
+#     # 检查仓库是否已存在
+#     api.repo_info(repo_name)
+#     print(f'Repo {repo_name} already exists. Skipping creation.')
+# except RepositoryNotFoundError:
+#     # 仓库不存在时创建仓库
+#     print(f'Repo {repo_name} does not exist. Creating it now.')
+#     api.create_repo(repo_name, private=True)"
 
       - name: Upload file to Hugging Face
         shell: bash
