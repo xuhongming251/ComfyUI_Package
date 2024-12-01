@@ -61,6 +61,48 @@ jobs:
           echo "force_update_deps:"
           echo ${{ inputs.force_update_deps }}
 
+      - name: Dynamic Gen Start ComfyUI Script
+        shell: bash
+        run: |
+          echo '@echo off
+          setlocal
+
+          :: Set ComfyUI root directory path (without the main.py part)
+          set comfyui_root_path=D:\ComfyUI
+
+          :: Build the full path to main.py and custom_nodes directory
+          set main_script_path=%comfyui_root_path%\main.py
+          set custom_nodes_dir=%comfyui_root_path%\custom_nodes
+
+          :: Output paths for confirmation
+          echo Main script path: %main_script_path%
+          echo Custom nodes directory: %custom_nodes_dir%
+
+          :: Modify the first line of python3xx._pth to set it to comfyui_root_path
+          (
+              setlocal enabledelayedexpansion
+              set first_line=%comfyui_root_path%
+              set first_line_done=false
+              for /f "delims=" %%A in (.\python_embeded\python3${{ inputs.python_minor }}._pth) do (
+                  if not !first_line_done! == true (
+                      echo !first_line!
+                      set first_line_done=true
+                  ) else (
+                      echo %%A
+                  )
+              )
+          ) > .\python_embeded\python3${{ inputs.python_minor }}._pth.tmp
+          move /y .\python_embeded\python3${{ inputs.python_minor }}._pth.tmp .\python_embeded\python3${{ inputs.python_minor }}._pth
+
+          :: Run the disable_nodes.py script with the custom nodes directory
+          .\python_embeded\python.exe .\python_embeded\disable_nodes.py --config ".\enable_nodes.json" --disable-config ".\disable_nodes.json" --custom-nodes-dir "%custom_nodes_dir%"
+
+          :: Run the main.py script
+          .\python_embeded\python.exe -s "%main_script_path%" --disable-metadata --windows-standalone-build
+
+          :: Pause to keep the command prompt open
+          pause' > "2、Start ComfyUI.bat"
+
       # 尝试恢复缓存
       - name: Restore dependencies cache
         id: restore_cache
@@ -131,6 +173,14 @@ jobs:
           python -m pip wheel --no-cache-dir torch torchvision torchaudio ${{ inputs.xformers }} ${{ inputs.extra_dependencies }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cu }} -r ./ComfyUI/requirements.txt pygit2 -w ./cu${{ inputs.cu }}_python_deps
           echo "ComfyUI whl deps have downloaded, the whl files:"
           ls -lah ./cu${{ inputs.cu }}_python_deps
+
+          echo "begin down ComfyUI-Manager requirements.txt"
+          curl https://raw.githubusercontent.com/ltdrdata/ComfyUI-Manager/refs/heads/main/requirements.txt
+          python -m pip wheel --no-cache-dir -r requirements.txt -w ./cu${{ inputs.cu }}_python_deps
+
+          echo "ComfyUI-Manager whl deps have downloaded, all the whl files:"
+          ls -lah ./cu${{ inputs.cu }}_python_deps
+
           tar cf cu${{ inputs.cu }}_python_deps.tar cu${{ inputs.cu }}_python_deps
           echo "deps tar file info:"
           ls -lh cu${{ inputs.cu }}_python_deps.tar
@@ -155,7 +205,7 @@ jobs:
 
           echo 'import site' >> ./python3${{ inputs.python_minor }}._pth
           sed -i '1i../ComfyUI' ./python3${{ inputs.python_minor }}._pth
-
+          
           ./python.exe -m pip install setuptools
           ./python.exe -m pip install colorama 
           
@@ -182,6 +232,7 @@ jobs:
             mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
             mv "3、Install Custom Dependencies.bat" ComfyUI_windows_portable
             mv "cmd_demo.txt" ComfyUI_windows_portable
+            mv "enable_nodes.json" ComfyUI_windows_portable
             echo "current path:"
             pwd
             ls -lh .
@@ -197,7 +248,7 @@ jobs:
             # 获取当前北京时间，格式化为年月日
             current_date=$(date +'%Y%m%d' -u -d "+8 hours")
             # 创建带有时间戳的压缩包
-            "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_ENV_${current_date}_Python3.${{ inputs.python_minor }}.${{ inputs.python_patch }}_cu${{ inputs.cu }}.zip" ComfyUI_windows_portable
+            "C:\Program Files\7-Zip\7z.exe" a -tzip "ComfyUI_ENV_${current_date}_Python3.${{ inputs.python_minor }}.${{ inputs.python_patch }}_cu${{ inputs.cu }}.zip" ./ComfyUI_windows_portable/*
             echo "UPLOAD_FILE_NAME=ComfyUI_ENV_${current_date}_Python3.${{ inputs.python_minor }}.${{ inputs.python_patch }}_cu${{ inputs.cu }}.zip" >> $GITHUB_ENV
             echo "current path:"
             pwd
