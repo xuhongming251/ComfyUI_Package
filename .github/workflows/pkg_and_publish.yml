@@ -63,7 +63,7 @@ jobs:
 
       # 动态根据python版本生成启动ComfyUI脚本
       - name: Dynamic Gen Start ComfyUI Script
-        - shell: bash
+        shell: bash
         run: |
           echo "@echo off
           setlocal
