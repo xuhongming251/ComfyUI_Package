@@ -44,3 +44,26 @@ for root, dirs, files in os.walk(deps_dir):
                     print(e.stderr.decode('utf-8'))
 
 print("All .whl files have been processed.")
+
+get_pip_py_path = os.path.join(current_dir, "get-pip.py")
+
+# 开始安装更新pip.exe
+command = [python_executable, get_pip_py_path]
+# 执行命令并捕获输出
+try:
+    result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # 打印成功信息
+    print(f"Installed pip.exe")
+    if result.stdout:
+        print(result.stdout.decode('utf-8'))
+    if result.stderr:
+        print(result.stderr.decode('utf-8'))
+except subprocess.CalledProcessError as e:
+    # 打印错误信息
+    print(f"Error installing pip.exe")
+    if e.stdout:
+        print(e.stdout.decode('utf-8'))
+    if e.stderr:
+        print(e.stderr.decode('utf-8'))
+
+print("end.")

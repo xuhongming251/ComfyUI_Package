@@ -233,7 +233,8 @@ jobs:
             mv "1、Offline Install ComfyUI Dependencies.bat" ComfyUI_windows_portable
             mv "2、Start ComfyUI.bat" ComfyUI_windows_portable
             mv "3、Install Custom Dependencies.bat" ComfyUI_windows_portable
-            mv "cmd_demo.txt" ComfyUI_windows_portable
+            mv "4、Enter Current Python Env.bat" ComfyUI_windows_portable
+            mv "README.md" ComfyUI_windows_portable
             mv "enable_nodes.json" ComfyUI_windows_portable
             echo "current path:"
             pwd
